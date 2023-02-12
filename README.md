@@ -208,5 +208,44 @@ fn calculate_length(s: &String) -> usize {
 In this case the dereferencing operator is not used to access the length of s. 
 s is a reference to a String value, and the len method is automatically available on references to String values. This is because the String type implements the Deref trait, which allows references to String values to be automatically dereferenced to str values.
 
+- The String Slice. Let's start with the string slice; a string slice is a reference to part of a `String`. Slices are of type &str. 
+
+```rust
+fn main() {
+    let s = String::from("hello world");
+
+    let hello = &s[0..5];
+    let world = &s[6..11];
+
+    println!("{}, {}", hello, world);
+}
+```
+
+The slice directly points to the string data stored in the memory. 
+
+All string literals are slices. 
+
+```rust
+fn main() {
+    let s = "Hello, world!";
+
+    println!("{}", s);
+}
+```
+
+The type of s here is &str: it’s a slice pointing to that specific point of the binary. This is also why string literals are immutable; &str is an immutable reference. This is different from the String type, which is growable and mutable.
+
+A reference to a String is equivalent to a slice of the entire String. 
+
+```rust
+fn main() {
+    let s1 = String::from("hello");
+
+    let len = calculate_length(&s1);
+
+    println!("The length of '{}' is {}.", s1, len);
+}
+
+
 
 
