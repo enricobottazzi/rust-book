@@ -12,6 +12,7 @@ Me learning RUST
 - Compound types can group multiple values into one type. Rust has two primitive compound types: tuples and arrays. 
 - Vectors are similar to arrays, but they can grow or shrink in size.
 - Return expression do not need a semicolon. If you add a semicolon to the end of an expression, you turn it into a statement, which will then not return a value.
+- Ownership is a set of rules that governs how a Rust program manages memory.
 - Double free memory problem => Earlier, we said that when a variable goes out of scope, Rust automatically calls the drop function and cleans up the heap memory for that variable. But Figure 4-2 shows both data pointers pointing to the same location. This is a problem: when s2 and s1 go out of scope, they will both try to free the same memory. This is known as a double free error and is one of the memory safety bugs we mentioned previously. Freeing memory twice can lead to memory corruption, which can potentially lead to security vulnerabilities. To ensure memory safety, after the line let s2 = s1, Rust considers s1 as no longer valid. Therefore, Rust doesn’t need to free anything when s1 goes out of scope. Check out what happens when you try to use s1 after s2 is created; it won’t work.
 - Copy trait for types that are stored on the stack. => Rust has a special annotation called the Copy trait that we can place on types that are stored on the stack, as integers are (we’ll talk more about traits in Chapter 10). If a type implements the Copy trait, variables that use it do not move, but rather are trivially copied, making them still valid after assignment to another variable. Rust won’t let us annotate a type with Copy if the type, or any of its parts, has implemented the Drop trait
 - The double free memory problem also applies to functions. If we try to use a variable after it’s been moved to another variable, we’ll get an error. This is because the variable we’re trying to use has been invalidated by the move => https://rust-book.cs.brown.edu/ch04-01-what-is-ownership.html#ownership-and-functions
@@ -176,7 +177,9 @@ fn main() {
 
 The scopes of the immutable references r1 and r2 end after the println! where they are last used, which is before the mutable reference r3 is created. These scopes don’t overlap, so this code is allowed
 
-- Dereferencing. We can use the dereference operator * to access the value that a reference points to. 
+- Dereferencing. We can use the dereference operator * to access the value that a reference points to. In Rust, references are used to refer to values stored in memory, and dereferencing a reference allows you to access the value that the reference points to.
+
+
 
 ```rust
 fn incr(n: &mut i32) {
@@ -245,7 +248,117 @@ fn main() {
 
     println!("The length of '{}' is {}.", s1, len);
 }
+```
 
+- Structs are similar to tuples, discussed in “The Tuple Type” section, in that both hold multiple related values. Like tuples, the pieces of a struct can be different types. Unlike with tuples, in a struct you’ll name each piece of data so it’s clear what the values mean. A struct is defined by setting a set of `fields` and their `types`. 
 
+```rust
+struct User {
+    username: String,
+    email: String,
+    sign_in_count: u64,
+    active: bool,
+}
+```
 
+- To use a struct after we define it, we create an instance of that struct by specifying concrete values for each of the fields. We create an instance by stating the name of the struct. 
 
+```rust
+    let user1 = User {
+        email: String::from("someone@example.com"),
+        username: String::from("someusername123"),
+        active: true,
+        sign_in_count: 1,
+    };
+```
+
+- If I want an instance of a Struct to be mutable, I need to add the mut keyword before the struct name. 
+
+```rust
+    let mut user1 = User {
+        email: String::from("someone@example.com"),
+        username: String::from("someusername123"),
+        active: true,
+        sign_in_count: 1,
+    };
+```
+
+- The debug trait is pretty useful. The dbg! macro takes ownership of an expression, prints the file and line number where the macro is called, and then returns the expression. Sometimes we might want to print a value without taking ownership of it. In this case, we can use the & operator to create a reference to the value.
+
+```rust
+fn main() {
+    let s = String::from("hello");
+    dbg!(&s);
+    dbg!(s);
+}
+```
+
+- Methods can take ownership of self, borrow self immutably as we’ve done here, or borrow self mutably, just as they can any other parameter. We’ve chosen &self here for the same reason we used &Rectangle in the function version: we don’t want to take ownership, and we just want to read the data in the struct, not write to it. If we wanted to change the instance that we’ve called the method on as part of what the method does, we’d use &mut self as the first parameter.
+
+- Creatting getters methods on a struct. Getters are useful because you can make the field private but the method public and thus enable read-only access to that field as part of the type’s public API. 
+
+```rust
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+    fn width(&self) -> u32 {
+        self.width
+    }
+}
+```
+
+- Associated functions of a struct don't need to take self as a parameter. These type of functions are often used for constructors that will return a new instance of the struct. 
+
+```rust
+impl Rectangle {
+    fn square(size: u32) -> Self {
+        Self { width: size, height: size }
+    }
+}
+```
+
+- Interesting example to understand mutability in Rust
+
+```rust
+
+struct Point {
+  x: i32,
+  y: i32
+}
+impl Point {
+  fn get_x(&mut self) -> &mut i32 {
+    &mut self.x
+  }
+}
+fn main() {
+  let mut p = Point { x: 1, y: 2 };
+  let x = p.get_x();
+  *x += 1;
+  println!("{} {}", *x, p.y);
+}
+```
+
+This wont compile because get_x mutably borrows all of p, a program cannot use p in any way until x is no longer used. Therefore reading x and p.y in the same line is an ownership error.
+
+In order to fix this, we can simply read x and p.y in two different lines!. 
+
+```rust
+struct Point {
+    x: i32,
+    y: i32
+  }
+  impl Point {
+    fn get_x(&mut self) -> &mut i32 {
+      &mut self.x
+    }
+  }
+  fn main() {
+    let mut p = Point { x: 1, y: 2 };
+    let x = p.get_x();
+    *x += 1;
+    println!("{}", *x);
+    println!("{}", p.y);
+
+  }
+```
