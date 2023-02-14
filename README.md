@@ -362,3 +362,79 @@ struct Point {
 
   }
 ```
+
+- Enums give you a way of saying a value is one of a possible set of values. 
+
+```rust
+enum IpAddrKind {
+    V4,
+    V6,
+}
+```
+
+Now IpAddrKind is a custom data type.
+
+```
+let four = IpAddrKind::V4;
+let six = IpAddrKind::V6;
+```
+
+- We can also use enums as functions that take arguments. 
+
+```rust
+enum IpAddr {
+    V4(u8, u8, u8, u8),
+    V6(String),
+}
+
+let home = IpAddr::V4(127, 0, 0, 1);
+let loopback = IpAddr::V6(String::from("::1"));
+```
+
+- We can also define methods on enums. 
+
+```rust
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+impl Message {
+    fn call(&self) {
+        // method body would be defined here
+    }
+}
+
+let m = Message::Write(String::from("hello"));
+m.call();
+
+```
+
+- The Option enum is as enum defined in the standard library. The Option type encodes the very common scenario in which a value could be something or it could be nothing.
+
+```rust
+enum Option<T> {
+    None,
+    Some(T),
+}
+```
+
+You can use it without the Option:: prefix because it is included into Rust’s prelude. 
+The <T> syntax is a feature of Rust called generics. It means that the Some variant of the Option enum can hold one piece of data of any type. Based on this type, the type of Option itself will be different. 
+
+```rust
+    let some_number = Some(5);
+    let some_char = Some('e');
+
+    let absent_number: Option<i32> = None;
+```
+
+The type of some_number is Option<i32>. The type of some_char is Option<char>, which is a different type. Rust can infer these types because we’ve specified a value inside the Some variant. For absent_number, Rust requires us to annotate the overall Option type: the compiler can’t infer the type that the corresponding Some variant will hold by looking only at a None value. Here, we tell Rust that we mean for absent_number to be of type Option<i32>.
+
+Everywhere that a value has a type that isn’t an Option<T>, you can safely assume that the value isn’t null.
+
+IT MEANS THAT IF YOU HAVE A VALUE THAT CAN BE NULL, YOU SHOULD USE AN OPTION<T> TO DEFINE IT!
+
+
