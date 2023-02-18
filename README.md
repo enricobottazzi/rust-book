@@ -437,4 +437,51 @@ Everywhere that a value has a type that isn’t an Option<T>, you can safely ass
 
 IT MEANS THAT IF YOU HAVE A VALUE THAT CAN BE NULL, YOU SHOULD USE AN OPTION<T> TO DEFINE IT!
 
+- When using the match expression, the compiler will verify that all possible cases are handled. 
 
+- The difference between if let and match is that with if, the evaluation of the expression must return a boolean. With match, the expression can be of any type.
+
+- Modules are by default private to its parent module.
+
+- Data collection in rust contain data types that get stored on the heap, which means the amount of data does not need to be known at compile time and can grow or shrink as the program runs. Examples are vectors, strings and hashmaps.
+
+- Vectors are similar to arrays but they can grow or shrink in size. Vectors can only store values of the same type. The Vec<T> type is provided by the standard library and is generic over the type of data it holds. Most of the time, the type of data is inferred from the data that is inserted into the vector. 
+
+```rust
+    let mut v = Vec::new();
+
+    v.push(5);
+    v.push(6);
+    v.push(7);
+    v.push(8);
+```
+
+- We can access element of a vector using the get method. It returns an Option<&T>.
+
+```rust
+    let third: Option<&i32> = v.get(2);
+    match third {
+        Some(third) => println!("The third element is {}", third),
+        None => println!("There is no third element."),
+    }
+```
+
+- We can also access elements of a vector using the index operator. In that case the program will panic if the index is out of bounds. You'd better use this program if you want your program to crash if there's an error.
+
+```rust
+    let third: &i32 = &v[2];
+    println!("The third element is {}", third);
+```
+
+- Vec::push MOVES the value into the vector.Vec::push moves its argument, so s is not usable after calling v.push(s). Therefore calling println("original: {}", s) is not ownership-safe.
+
+```rust
+fn main() {
+  let mut v = Vec::new();
+  let s = String::from("Hello ");
+  v.push(s);
+  v[0].push_str("world");
+  println!("original: {}", s);
+  println!("new: {}", v[0]);
+}
+```
