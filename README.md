@@ -473,6 +473,18 @@ IT MEANS THAT IF YOU HAVE A VALUE THAT CAN BE NULL, YOU SHOULD USE AN OPTION<T> 
     println!("The third element is {}", third);
 ```
 
+- Remember borrowing rules? We can't have a mutable reference to a vector and a reference to an element of the vector at the same time. 
+
+```rust
+    let mut v = vec![1, 2, 3, 4, 5];
+
+    let first = &v[0];
+
+    v.push(6);
+
+    println!("The first element is: {}", first);
+```
+
 - Vec::push MOVES the value into the vector.Vec::push moves its argument, so s is not usable after calling v.push(s). Therefore calling println("original: {}", s) is not ownership-safe.
 
 ```rust
@@ -518,3 +530,35 @@ fn main() {
 ```
 
 In this example count is a mutable reference to the value corresponding to a key in the map. The type of `count` is `&mut V`, where V is the value type of the map.The *count syntax is used to dereference the reference and access the underlying value. So, *count += 1 increments the value stored in the map for the key word.
+
+- Interesting program.  has type &mut i32, meaning it is a pointer to a number within v. So if we push i into v2, then v2 contains pointers to v. Therefore mutating v2[0] actually mutates v[0].
+
+```rust
+fn main() {
+  let mut v = vec![1, 2, 3];
+  let mut v2 = Vec::new();
+  for i in &mut v {
+    v2.push(i);
+  }
+  *v2[0] = 5;
+  let a = *v2[0];
+  let b = v[0];
+  println!("{a} {b}");
+}
+```
+
+- Another interesting program.
+```rust
+
+fn main() {
+  let mut v = vec![1, 2, 3];
+  for i in &mut v {
+    v.push(*i);
+  }
+  println!("{} {} {}", v[3], v[4], v[5]);
+}
+```
+
+Even though v is mutably borrowed, that only allows i to be mutated inside the for-loop, not v. Therefore calling v.push is an ownership error.
+
+
