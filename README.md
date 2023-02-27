@@ -561,4 +561,17 @@ fn main() {
 
 Even though v is mutably borrowed, that only allows i to be mutated inside the for-loop, not v. Therefore calling v.push is an ownership error.
 
+- Something very important to note is the ownership collision when you try to operate a mutable borrow after an immutable borrow is initiated and still open. 
 
+```rust
+fn remove_zeros(v: &mut Vec<i32>) {
+    for (i, t) in v.iter().enumerate().rev() {
+        if *t == 0 {
+            v.remove(i);
+            v.shrink_to_fit();
+        }
+    }
+}
+```
+
+Here iter operates on an immutable borrow of v while remove operates on a mutable borrow of v. This is not allowed.
